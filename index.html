@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAXCORP | PERSONAL TERMINAL</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div id="splash-screen">
+        <h1 class="system-text blink">INITIALIZING SYSTEM...</h1>
+        <p class="system-text">ESTABLISHING UPLINK TO SERVER</p>
+        <div class="loading-bar"></div>
+    </div>
+
+    <div id="lcars-wrapper" class="hidden">
+
+        <nav class="lcars-elbow">
+            <div class="elbow-top">
+                <h2 class="sys-title">LCARS-01</h2>
+            </div>
+            <div class="elbow-curve"></div>
+            <div class="elbow-bottom">
+                <button id="theme-toggle" class="lcars-btn" title="TOGGLE VISUAL INTERFACE">ENGAGE RETRO PROTOCOL</button>
+            </div>
+        </nav>
+
+        <main class="lcars-content">
+
+            <section id="about" class="data-panel">
+                <h3 class="panel-header">PERSONAL FILE</h3>
+                <div class="panel-body">
+                    <p>DEVELOPER STATUS: OPERATIONAL.</p>
+                    <p>CURRENT DIRECTIVE: BUILDING MODERN WEB ARCHITECTURE AND INTEGRATING ROBUST BACKEND SYSTEMS.</p>
+                </div>
+            </section>
+
+            <section id="projects" class="data-panel">
+                <h3 class="panel-header">ACTIVE DIRECTORY</h3>
+                <div class="grid-container">
+
+                    <div class="project-card">
+                        <h4 class="project-title">DATABASE CONTROLLER</h4>
+                        <p class="project-desc">MAIN OPERATIONAL PROJECT UTILIZING POSTGRESQL ARCHITECTURE. STATUS: ONLINE.</p>
+                        <a href="#" class="lcars-btn small" title="ACCESS PROJECT REPOSITORY">ACCESS DATA</a>
+                    </div>
+
+                    <div class="project-card locked" title="RESTRICTED AREA">
+                        <h4 class="project-title">SLOT 02: ENCRYPTED</h4>
+                        <p class="project-desc">SYSTEM IN DEVELOPMENT...</p>
+                    </div>
+
+                </div>
+            </section>
+
+            <section id="skills" class="data-panel">
+                <h3 class="panel-header">SYSTEM DIAGNOSTICS</h3>
+                <div class="panel-body">
+                    <p class="skill-row" title="PYTHON CAPACITY: OPTIMAL">PYTHON <span class="bar-value">[||||||||  ]</span></p>
+                    <p class="skill-row" title="JAVASCRIPT CAPACITY: NOMINAL">JS &nbsp;&nbsp;&nbsp;&nbsp;<span class="bar-value">[||||||    ]</span></p>
+                    <p class="skill-row" title="HTML/CSS CAPACITY: MAXIMUM">HTML/CSS <span class="bar-value">[||||||||| ]</span></p>
+                </div>
+            </section>
+
+            <section id="contact" class="data-panel">
+                <h3 class="panel-header">SUBSPACE COMMUNICATIONS</h3>
+                <div class="comms-grid">
+                    <a href="mailto:primary@domain.com" class="lcars-btn" title="INITIATE PRIMARY COMMS">PRIMARY CHANNEL</a>
+                    <a href="mailto:secondary@domain.com" class="lcars-btn" title="INITIATE SECONDARY COMMS">SECONDARY CHANNEL</a>
+                    <a href="#" class="lcars-btn" title="ACCESS PUBLIC REPOSITORY">PUBLIC REPOSITORY</a>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
