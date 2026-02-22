@@ -158,7 +158,7 @@ h1, h2, h3, h4, .lcars-btn {
 
 .elbow-curve {
     height: 50px;
-    width: 50px; /* ALIGN WITH VERTICAL BAR */
+    width: 150px; /* INCREASED WIDTH FOR HORIZONTAL TEXT */
     background-color: var(--lcars-color-1);
     border-radius: 0;
     margin-bottom: 5px; /* LCARS STANDARD SEPARATOR */
@@ -168,12 +168,20 @@ h1, h2, h3, h4, .lcars-btn {
 
 .elbow-bottom {
     flex-grow: 1;
-    width: 50px;
-    background-color: var(--lcars-color-2);
+    width: 150px; /* INCREASED WIDTH FOR HORIZONTAL TEXT */
+    background-color: transparent; /* TRANSPARENT TO SHOW GAPS BETWEEN BUTTONS */
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding-top: 20px;
+    align-items: stretch; /* STRETCH BUTTONS TO FILL WIDTH */
+    /* PADDING REMOVED TO LET BUTTONS ALIGN PERFECTLY */
+}
+
+.elbow-extension {
+    flex-grow: 1; /* PUSHES ALL THE WAY TO THE BOTTOM */
+    width: 100%;
+    background-color: var(--lcars-color-1); /* MATCH MAIN ELBOW COLOR FOR COHESION */
+    border-radius: 0 0 0 var(--pill-radius); /* ROUNDED BOTTOM-LEFT CORNER */
+    margin-top: 0; /* REMOVED TO PREVENT DOUBLE GAP (BUTTON HAS MARGIN-BOTTOM) */
     box-shadow: var(--glow-effect);
     transition: all 0.3s ease;
 }
@@ -216,6 +224,15 @@ h1, h2, h3, h4, .lcars-btn {
     border-left: 10px solid var(--lcars-color-3);
     padding: 15px;
     background-color: rgba(0,0,0,0.5);
+
+    /* ALIGNMENT PROTOCOL: FLEXBOX VERTICAL STRETCH */
+    display: flex;
+    flex-direction: column;
+}
+
+.project-desc {
+    flex-grow: 1; /* EXPANDS TO FILL EMPTY SPACE, PUSHING BUTTON DOWN */
+    margin-bottom: 15px; /* KEEPS TEXT AND BUTTON SEPARATED */
 }
 
 .project-card.locked {
@@ -228,6 +245,14 @@ h1, h2, h3, h4, .lcars-btn {
     font-size: 1.2rem;
     margin-bottom: 10px;
     color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+}
+
+.skill-label {
+    width: 100px; /* FIXED WIDTH FOR PERFECT VERTICAL ALIGNMENT */
+    flex-shrink: 0; /* PREVENTS TEXT FROM SQUISHING */
+    display: inline-block;
 }
 
 .bar-value {
@@ -265,18 +290,25 @@ h1, h2, h3, h4, .lcars-btn {
     transform: scale(1.05);
 }
 
-#theme-toggle {
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    transform: rotate(180deg);
-    height: 200px;
-    width: 40px;
-    padding: 20px 0;
-    background-color: var(--lcars-color-1);
+/* HORIZONTAL ALIGNMENT FOR LEFT BAR BUTTONS */
+#audio-toggle, #theme-toggle {
+    writing-mode: horizontal-tb;
+    transform: none;
+    height: auto;
+    width: 100%;
+    padding: 15px 15px;
+    text-align: right; /* CLASSIC LCARS TEXT ALIGNMENT */
+    margin-bottom: 5px; /* LCARS SEPARATOR GAP */
+    border-radius: 0; /* FLAT EDGES FOR INTERNAL BLOCKS */
+    font-size: 0.9rem;
+}
 
-    /* DISABLE BROWSER DEFAULT TAP HIGHLIGHT */
-    -webkit-tap-highlight-color: transparent;
-    outline: none;
+#audio-toggle {
+    background-color: var(--lcars-color-3); /* SECONDARY MODULE COLOR */
+}
+
+#theme-toggle {
+    background-color: var(--lcars-color-2); /* ACTION BUTTON CONTRAST COLOR */
 }
 
 /* --- 10. TRICORDER MODE (MOBILE RESPONSIVENESS) --- */
@@ -306,7 +338,7 @@ h1, h2, h3, h4, .lcars-btn {
     }
 
     .elbow-bottom {
-        width: 60px;
+        width: 180px; /* EXTENDED WIDTH TO FIT BOTH BUTTONS */
         height: 60px;
         flex-direction: row;
         padding: 0;
@@ -318,13 +350,32 @@ h1, h2, h3, h4, .lcars-btn {
         padding-top: 0;
     }
 
-    #theme-toggle {
+    /* SHARED MOBILE PROPERTIES FOR BOTH BUTTONS */
+    #theme-toggle, #audio-toggle {
         writing-mode: horizontal-tb;
         transform: none;
         height: 100%;
-        width: 100%;
+        width: 50%; /* SPLIT SPACE EVENLY */
         padding: 0;
-        font-size: 0.8rem;
+        margin: 0;
+        font-size: 0.7rem;
+        text-align: center; /* CENTER TEXT ON MOBILE TRICORDER */
+    }
+
+    /* AUDIO BUTTON: GAP ON LEFT (FROM SENSOR BAR) AND RIGHT (FROM THEME BTN) */
+    #audio-toggle {
+        border-radius: 0;
+        border-left: 5px solid var(--bg-space); /* BLACK GAP LEFT */
+        border-right: 5px solid var(--bg-space); /* BLACK GAP RIGHT */
+    }
+
+    /* THEME BUTTON: RIGHT SIDE, ROUNDED CORNERS */
+    #theme-toggle {
         border-radius: 0 var(--pill-radius) var(--pill-radius) 0;
+    }
+
+    /* HIDE VERTICAL EXTENSION BAR ON MOBILE SENSOR ARRAY */
+    .elbow-extension {
+        display: none;
     }
 }
