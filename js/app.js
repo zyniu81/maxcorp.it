@@ -308,4 +308,171 @@ document.addEventListener("DOMContentLoaded", () => {
     if (skillsPanel) {
         fetchGitHubStats();
     }
+
+    // --- 7. HOLOGRAPHIC REPOSITORY MODAL ---
+    const modalOverlay = document.getElementById("repo-modal-overlay");
+    const modalScreen = document.getElementById("repo-modal-screen");
+    const beamLeft = document.querySelector(".beam-left");
+    const beamRight = document.querySelector(".beam-right");
+    const closeModalBtn = document.getElementById("close-modal-btn");
+    const repoListContainer = document.getElementById("repo-list-container");
+
+    // TARGET THE "DATABASE CONTROLLER" BUTTON AS TRIGGER
+    const btnOpenModal = document.querySelector('a[title="ACCESS PROJECT REPOSITORY"]');
+
+    if (btnOpenModal) {
+        btnOpenModal.addEventListener("click", (e) => {
+            e.preventDefault(); // PREVENT DEFAULT LINK JUMP
+
+            // PHASE 1: SHOW DARK OVERLAY AND DOTS
+            modalOverlay.classList.remove("hidden");
+
+            // PHASE 2: VERTICAL BEAM GROW
+            setTimeout(() => {
+                beamLeft.classList.add("beam-animate-vertical");
+                beamRight.classList.add("beam-animate-vertical");
+            }, 100);
+
+            // PHASE 3: HORIZONTAL BEAM SLIDE
+            setTimeout(() => {
+                beamLeft.classList.replace("beam-animate-vertical", "beam-animate-horizontal-left");
+                beamRight.classList.replace("beam-animate-vertical", "beam-animate-horizontal-right");
+            }, 400);
+
+            // PHASE 4: REVEAL SCREEN AND LOAD DATA
+            setTimeout(() => {
+                modalScreen.classList.remove("hidden");
+                setTimeout(() => modalScreen.classList.add("fade-in"), 50);
+
+                // INITIATE DATA FETCH (BLENDS GITHUB WITH MANUAL PROJECTS)
+                loadRepositoryData();
+            }, 900);
+        });
+    }
+
+    // FUNCTION TO CLOSE MODAL AND RESET ANIMATIONS
+    function closeRepoModal() {
+        modalOverlay.classList.add("hidden");
+        modalScreen.classList.add("hidden");
+        modalScreen.classList.remove("fade-in");
+
+        // RESET BEAM CLASSES TO DEFAULT STATE
+        beamLeft.className = "beam-left";
+        beamRight.className = "beam-right";
+
+        // RESET SCREEN CONTENT FOR NEXT USE
+        repoListContainer.innerHTML = '<p class="system-text blink" style="text-align:center; padding: 20px;">AWAITING SENSOR DATA...</p>';
+    }
+
+    // ATTACH CLOSE EVENTS
+    if (closeModalBtn) closeModalBtn.addEventListener("click", closeRepoModal);
+
+    if (modalOverlay) {
+        modalOverlay.addEventListener("click", (e) => {
+            // CLOSE ONLY IF CLICKING THE DARK OVERLAY, NOT THE SCREEN ITSELF
+            if (e.target === modalOverlay || e.target.id === "repo-modal-container") {
+                closeRepoModal();
+            }
+        });
+    }
+
+    // FUNCTION TO FETCH GITHUB REPOS AND MIX WITH MANUAL PROJECTS
+    async function loadRepositoryData() {
+
+        // ---------------------------------------------------------
+        // YOUR MANUAL PROJECTS DATABASE (NO GITHUB LINK REQUIRED)
+        // ---------------------------------------------------------
+        const manualProjects = [
+            {
+                name: "PRIVATE UI DEMO",
+                description: "A SMALL BUT FUNCTIONAL FRONTEND PROTOTYPE NOT HOSTED ON GITHUB.",
+                language: "HTML/CSS/JS",
+                html_url: null, // LEAVE NULL TO HIDE "SOURCE CODE" BUTTON
+                homepage: "https://example.com/moj-fajny-projekt" // ADD LIVE DEMO LINK HERE
+            },
+            // YOU CAN ADD MORE PROJECTS HERE LATER SEPARATED BY COMMAS
+        ];
+        // ---------------------------------------------------------
+
+        try {
+            // FETCH GITHUB DATA (REUSING THE USERNAME VARIABLE FROM DIAGNOSTICS)
+            const response = await fetch(`https://api.github.com/users/${githubUsername}/repos`);
+            if (!response.ok) throw new Error("API COMMS FAILURE");
+            const gitRepos = await response.json();
+
+            // COMBINE GITHUB REPOS WITH MANUAL PROJECTS
+            const allProjects = [...gitRepos, ...manualProjects];
+
+            // CLEAR THE "AWAITING DATA" MESSAGE
+            repoListContainer.innerHTML = "";
+
+            // RENDER EACH PROJECT INTO THE SCROLLABLE WINDOW
+            allProjects.forEach(repo => {
+                // SKIP FORKED REPOS TO KEEP LIST CLEAN (OPTIONAL)
+                if (repo.fork) return;
+
+                const card = document.createElement("div");
+                card.style.borderLeft = "5px solid var(--lcars-color-1)";
+                card.style.padding = "15px";
+                card.style.backgroundColor = "rgba(0,0,0,0.5)";
+                card.style.display = "flex";
+                card.style.flexDirection = "column";
+
+                const title = document.createElement("h4");
+                title.className = "project-title";
+                title.textContent = repo.name.toUpperCase();
+                title.style.color = "var(--lcars-color-3)";
+
+                const desc = document.createElement("p");
+                desc.style.flexGrow = "1";
+                desc.style.marginBottom = "15px";
+                desc.style.fontSize = "0.9rem";
+                desc.textContent = repo.description ? repo.description.toUpperCase() : "DESCRIPTION: NOT PROVIDED";
+
+                const lang = document.createElement("p");
+                lang.style.fontFamily = "monospace";
+                lang.style.color = "var(--text-secondary)";
+                lang.style.marginBottom = "15px";
+                lang.textContent = `PRIMARY SUBSYSTEM: ${repo.language ? repo.language.toUpperCase() : "UNKNOWN"}`;
+
+                const btnContainer = document.createElement("div");
+                btnContainer.style.display = "flex";
+                btnContainer.style.gap = "10px";
+
+                // BUTTON 1: GITHUB SOURCE CODE (GENERATES ONLY IF GITHUB LINK EXISTS)
+                if (repo.html_url) {
+                    const btnSource = document.createElement("a");
+                    btnSource.href = repo.html_url;
+                    btnSource.target = "_blank"; // OPEN IN NEW TAB
+                    btnSource.className = "lcars-btn small";
+                    btnSource.textContent = "SOURCE CODE";
+                    btnSource.setAttribute("title", "ACCESS GITHUB REPOSITORY");
+                    btnContainer.appendChild(btnSource);
+                }
+
+                // BUTTON 2: LIVE DEMO (GENERATES ONLY IF HOMEPAGE LINK EXISTS)
+                if (repo.homepage && repo.homepage !== "") {
+                    const btnLive = document.createElement("a");
+                    btnLive.href = repo.homepage;
+                    btnLive.target = "_blank"; // OPEN IN NEW TAB
+                    btnLive.className = "lcars-btn small";
+                    btnLive.style.backgroundColor = "var(--lcars-color-2)"; // HIGHLIGHT COLOR
+                    btnLive.textContent = "LIVE DEMO";
+                    btnLive.setAttribute("title", "ACCESS LIVE DEPLOYMENT");
+                    btnContainer.appendChild(btnLive);
+                }
+
+                card.appendChild(title);
+                card.appendChild(desc);
+                card.appendChild(lang);
+                card.appendChild(btnContainer);
+
+                repoListContainer.appendChild(card);
+            });
+
+        } catch (error) {
+            console.error("TELEMETRY ERROR: ", error);
+            repoListContainer.innerHTML = '<p class="system-text" style="color: var(--lcars-color-alert); text-align:center;">UPLINK FAILED. UNABLE TO RETRIEVE DATA.</p>';
+        }
+    }
 });

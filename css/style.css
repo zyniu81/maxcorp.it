@@ -385,3 +385,139 @@ h1, h2, h3, h4, .lcars-btn {
         display: none;
     }
 }
+
+/* ========================================= */
+/* --- 11. HOLOGRAPHIC REPOSITORY MODAL ---  */
+/* ========================================= */
+
+/* THE DARK OVERLAY BEHIND THE MODAL */
+#repo-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.85); /* DEEP SPACE BACKGROUND */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9000; /* ALWAYS ON TOP, BUT UNDER SPLASH SCREEN */
+}
+
+/* KEEPS THE MODAL HIDDEN WHEN NOT IN USE */
+#repo-modal-overlay.hidden {
+    display: none !important;
+}
+
+/* THE CONTAINER HOLDING BEAMS AND SCREEN */
+#repo-modal-container {
+    position: relative;
+    width: 90%;
+    max-width: 800px;
+    height: 80vh; /* DYNAMIC HEIGHT: 80% OF THE VIEWPORT */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* --- ANIMATION: THE VERTICAL BEAMS --- */
+.beam-left, .beam-right {
+    position: absolute;
+    width: 12px;
+    height: 12px; /* STARTS AS A GLOWING DOT */
+    background-color: var(--lcars-color-1);
+    border-radius: var(--pill-radius);
+    box-shadow: var(--glow-effect);
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0; /* INVISIBLE UNTIL TRIGGERED */
+}
+
+/* CLASSES INJECTED BY JAVASCRIPT FOR ANIMATION PHASES */
+.beam-animate-dot {
+    opacity: 1;
+}
+
+.beam-animate-vertical {
+    opacity: 1;
+    animation: beamGrow 0.3s forwards ease-in-out;
+}
+
+.beam-animate-horizontal-left {
+    height: 100%;
+    opacity: 1;
+    animation: beamSlideLeft 0.5s forwards ease-in-out;
+}
+
+.beam-animate-horizontal-right {
+    height: 100%;
+    opacity: 1;
+    animation: beamSlideRight 0.5s forwards ease-in-out;
+}
+
+/* KEYFRAMES FOR THE HOLOGRAPHIC EFFECT */
+@keyframes beamGrow {
+    0% { height: 12px; }
+    100% { height: 100%; }
+}
+
+@keyframes beamSlideLeft {
+    0% { left: 50%; transform: translate(-50%, -50%); }
+    100% { left: 0; transform: translate(0, -50%); }
+}
+
+@keyframes beamSlideRight {
+    0% { right: 50%; transform: translate(50%, -50%); }
+    100% { right: 0; transform: translate(0, -50%); }
+}
+
+/* --- THE INNER SCREEN --- */
+#repo-modal-screen {
+    width: calc(100% - 40px); /* FITS PERFECTLY BETWEEN THE BEAMS */
+    height: 100%;
+    background-color: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--panel-radius);
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transition: opacity 0.4s ease; /* FADES IN */
+}
+
+#repo-modal-screen.fade-in {
+    opacity: 1;
+}
+
+/* MODAL INTERNAL LAYOUT */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 2px solid var(--lcars-color-3);
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-body {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto; /* ACTIVATES VERTICAL SCROLLING */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* --- CUSTOM LCARS SCROLLBAR --- */
+.modal-body::-webkit-scrollbar {
+    width: 15px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: var(--bg-space);
+    border-left: 2px solid var(--lcars-color-3);
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: var(--lcars-color-2);
+    border-radius: var(--pill-radius);
+}
