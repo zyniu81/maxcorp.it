@@ -213,4 +213,99 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // --- 6. DYNAMIC GITHUB SENSOR ARRAY (SYSTEM DIAGNOSTICS) ---
+    const githubUsername = "zyniu81";
+    const skillsPanel = document.querySelector("#skills .panel-body");
+
+    // ASYNC FUNCTION TO FETCH AND RENDER REPOSITORY DATA
+    async function fetchGitHubStats() {
+        try {
+            // CHECK LOCAL CACHE TO PREVENT API RATE LIMIT LOCKOUT (60 REQ/HR)
+            const cachedData = sessionStorage.getItem("lcars_github_stats");
+            if (cachedData) {
+                renderSkills(JSON.parse(cachedData));
+                return;
+            }
+
+            // DISPLAY SCANNING STATUS
+            skillsPanel.innerHTML = "<p class='skill-row'><span class='skill-label'>SCANNING...</span></p>";
+
+            // FETCH ALL PUBLIC REPOSITORIES
+            const reposResponse = await fetch(`https://api.github.com/users/${githubUsername}/repos`);
+            if (!reposResponse.ok) throw new Error("API COMMS FAILURE");
+            const repos = await reposResponse.json();
+
+            let languageTotals = {};
+            let totalBytes = 0;
+
+            // FETCH EXACT BYTE COUNTS FOR EACH REPOSITORY CONCURRENTLY
+            const langPromises = repos.map(repo => fetch(repo.languages_url).then(res => res.json()));
+            const langsArray = await Promise.all(langPromises);
+
+            // AGGREGATE ALL BYTES PER LANGUAGE
+            langsArray.forEach(langs => {
+                for (const [lang, bytes] of Object.entries(langs)) {
+                    if (!languageTotals[lang]) languageTotals[lang] = 0;
+                    languageTotals[lang] += bytes;
+                    totalBytes += bytes;
+                }
+            });
+
+            // ABORT PROTOCOL IF NO DATA IS FOUND
+            if (totalBytes === 0) {
+                skillsPanel.innerHTML = "<p class='skill-row'><span class='skill-label'>NO DATA</span></p>";
+                return;
+            }
+
+            // CALCULATE PERCENTAGES AND SORT DESENDING
+            let stats = [];
+            for (const [lang, bytes] of Object.entries(languageTotals)) {
+                stats.push({
+                    lang: lang,
+                    percent: ((bytes / totalBytes) * 100).toFixed(1)
+                });
+            }
+            stats.sort((a, b) => b.percent - a.percent);
+
+            // CACHE THE RESULTS FOR THIS BROWSER SESSION
+            sessionStorage.setItem("lcars_github_stats", JSON.stringify(stats));
+
+            // RENDER THE INTERFACE
+            renderSkills(stats);
+
+        } catch (error) {
+            console.error("TELEMETRY ERROR: ", error);
+            skillsPanel.innerHTML = "<p class='skill-row'><span class='skill-label' style='color: var(--lcars-color-alert);'>UPLINK FAILED</span></p>";
+        }
+    }
+
+    // FUNCTION TO BUILD AND INJECT HTML NODES
+    function renderSkills(stats) {
+        skillsPanel.innerHTML = ""; // CLEAR PANEL
+
+        stats.forEach(stat => {
+            // FILTER OUT MICRO-LANGUAGES (UNDER 1%) TO KEEP UI CLEAN
+            if (stat.percent >= 1.0) {
+                const totalBlocks = 10;
+                const filledBlocks = Math.round((stat.percent / 100) * totalBlocks);
+                // USE NON-BREAKING SPACES (\u00A0) TO PRESERVE BAR LENGTH IN HTML
+                const barString = "[" + "|".repeat(filledBlocks) + "\u00A0".repeat(totalBlocks - filledBlocks) + "]";
+
+                const p = document.createElement("p");
+                p.className = "skill-row";
+                p.setAttribute("title", `${stat.lang.toUpperCase()} CAPACITY: ${stat.percent}%`);
+
+                p.innerHTML = `
+                    <span class="skill-label">${stat.lang.toUpperCase()}</span> 
+                    <span class="bar-value">${barString} ${Math.round(stat.percent)}%</span>
+                `;
+                skillsPanel.appendChild(p);
+            }
+        });
+    }
+
+    // INITIATE SCAN SEQUENCE
+    if (skillsPanel) {
+        fetchGitHubStats();
+    }
 });

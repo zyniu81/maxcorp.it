@@ -240,18 +240,24 @@ h1, h2, h3, h4, .lcars-btn {
     opacity: 0.6;
 }
 
-.skill-row {
-    font-family: monospace;
-    font-size: 1.2rem;
-    margin-bottom: 10px;
-    color: var(--text-secondary);
-    display: flex;
+/* ADAPTIVE GRID SHIELDS FOR SKILLS PANEL */
+#skills .panel-body {
+    display: grid;
+    grid-template-columns: max-content 1fr; /* COLUMN 1 HUGS TEXT, COLUMN 2 TAKES THE REST */
+    column-gap: 15px; /* SPACE BETWEEN TEXT AND BAR */
+    row-gap: 10px; /* SPACE BETWEEN ROWS */
     align-items: center;
 }
 
+.skill-row {
+    display: contents; /* MAKES THE WRAPPER INVISIBLE TO LAYOUT, LETTING TEXT AND BARS JOIN THE GRID */
+    font-family: monospace;
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+}
+
 .skill-label {
-    width: 100px; /* FIXED WIDTH FOR PERFECT VERTICAL ALIGNMENT */
-    flex-shrink: 0; /* PREVENTS TEXT FROM SQUISHING */
+    /* FIXED WIDTH REMOVED - SYSTEM NOW ADAPTS TO THE LONGEST WORD AUTOMATICALLY */
     display: inline-block;
 }
 
