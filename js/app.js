@@ -317,12 +317,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeModalBtn = document.getElementById("close-modal-btn");
     const repoListContainer = document.getElementById("repo-list-container");
 
+    // INITIALIZE DOOR AUDIO OBJECT (M4A FORMAT FULLY SUPPORTED)
+    const soundDoors = new Audio("assets/audio/tng_doors.m4a");
+    soundDoors.volume = 0.5; // ADJUST IF THE DOORS ARE TOO LOUD
+
     // TARGET THE "DATABASE CONTROLLER" BUTTON AS TRIGGER
     const btnOpenModal = document.querySelector('a[title="ACCESS PROJECT REPOSITORY"]');
 
     if (btnOpenModal) {
         btnOpenModal.addEventListener("click", (e) => {
             e.preventDefault(); // PREVENT DEFAULT LINK JUMP
+
+            // PLAY DOOR OPEN SOUND
+            if (isAudioEnabled) {
+                let doorClone = soundDoors.cloneNode();
+                doorClone.volume = 0.5;
+                doorClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
+            }
 
             // PHASE 1: SHOW DARK OVERLAY AND DOTS
             modalOverlay.classList.remove("hidden");
@@ -350,18 +361,45 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // FUNCTION TO CLOSE MODAL AND RESET ANIMATIONS
+    // FUNCTION TO CLOSE MODAL WITH SEQUENTIAL REVERSE ANIMATIONS
     function closeRepoModal() {
-        modalOverlay.classList.add("hidden");
-        modalScreen.classList.add("hidden");
+        // PLAY DOOR CLOSE SOUND IMMEDIATELY
+        if (isAudioEnabled) {
+            let doorClone = soundDoors.cloneNode();
+            doorClone.volume = 0.5;
+            doorClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
+        }
+
+        // PHASE 1: FADE OUT THE SCREEN FIRST
         modalScreen.classList.remove("fade-in");
 
-        // RESET BEAM CLASSES TO DEFAULT STATE
-        beamLeft.className = "beam-left";
-        beamRight.className = "beam-right";
+        // WAIT 400ms (CSS FADE DURATION) THEN HIDE SCREEN AND START CLOSING BEAMS
+        setTimeout(() => {
+            modalScreen.classList.add("hidden");
 
-        // RESET SCREEN CONTENT FOR NEXT USE
-        repoListContainer.innerHTML = '<p class="system-text blink" style="text-align:center; padding: 20px;">AWAITING SENSOR DATA...</p>';
+            // PHASE 2: SLIDE BEAMS BACK TO CENTER USING EXPLICIT CLASSES
+            beamLeft.className = "beam-left beam-close-horizontal-left";
+            beamRight.className = "beam-right beam-close-horizontal-right";
+
+            // WAIT 500ms (CSS SLIDE DURATION) THEN SHRINK VERTICALLY
+            setTimeout(() => {
+                // PHASE 3: SHRINK BACK TO DOTS WITH EXPLICIT POSITIONING
+                beamLeft.className = "beam-left beam-close-vertical-left";
+                beamRight.className = "beam-right beam-close-vertical-right";
+
+                // WAIT 300ms (CSS GROW DURATION) THEN HIDE OVERLAY AND CLEAN UP
+                setTimeout(() => {
+                    modalOverlay.classList.add("hidden");
+                    beamLeft.className = "beam-left";
+                    beamRight.className = "beam-right";
+
+                    // RESET SCREEN CONTENT FOR NEXT USE
+                    repoListContainer.innerHTML = '<p class="system-text blink" style="text-align:center; padding: 20px;">AWAITING SENSOR DATA...</p>';
+                }, 300);
+
+            }, 500);
+
+        }, 400);
     }
 
     // ATTACH CLOSE EVENTS
@@ -376,39 +414,20 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // FUNCTION TO FETCH GITHUB REPOS AND MIX WITH MANUAL PROJECTS
+    // FUNCTION TO FETCH GITHUB REPOS
     async function loadRepositoryData() {
-
-        // ---------------------------------------------------------
-        // YOUR MANUAL PROJECTS DATABASE (NO GITHUB LINK REQUIRED)
-        // ---------------------------------------------------------
-        const manualProjects = [
-            {
-                name: "PRIVATE UI DEMO",
-                description: "A SMALL BUT FUNCTIONAL FRONTEND PROTOTYPE NOT HOSTED ON GITHUB.",
-                language: "HTML/CSS/JS",
-                html_url: null, // LEAVE NULL TO HIDE "SOURCE CODE" BUTTON
-                homepage: "https://example.com/moj-fajny-projekt" // ADD LIVE DEMO LINK HERE
-            },
-            // YOU CAN ADD MORE PROJECTS HERE LATER SEPARATED BY COMMAS
-        ];
-        // ---------------------------------------------------------
-
         try {
             // FETCH GITHUB DATA (REUSING THE USERNAME VARIABLE FROM DIAGNOSTICS)
             const response = await fetch(`https://api.github.com/users/${githubUsername}/repos`);
             if (!response.ok) throw new Error("API COMMS FAILURE");
             const gitRepos = await response.json();
 
-            // COMBINE GITHUB REPOS WITH MANUAL PROJECTS
-            const allProjects = [...gitRepos, ...manualProjects];
-
             // CLEAR THE "AWAITING DATA" MESSAGE
             repoListContainer.innerHTML = "";
 
             // RENDER EACH PROJECT INTO THE SCROLLABLE WINDOW
-            allProjects.forEach(repo => {
-                // SKIP FORKED REPOS TO KEEP LIST CLEAN (OPTIONAL)
+            gitRepos.forEach(repo => {
+                // SKIP FORKED REPOS TO KEEP LIST CLEAN
                 if (repo.fork) return;
 
                 const card = document.createElement("div");
@@ -439,7 +458,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 btnContainer.style.display = "flex";
                 btnContainer.style.gap = "10px";
 
-                // BUTTON 1: GITHUB SOURCE CODE (GENERATES ONLY IF GITHUB LINK EXISTS)
+                // BUTTON 1: GITHUB SOURCE CODE
                 if (repo.html_url) {
                     const btnSource = document.createElement("a");
                     btnSource.href = repo.html_url;
@@ -450,7 +469,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     btnContainer.appendChild(btnSource);
                 }
 
-                // BUTTON 2: LIVE DEMO (GENERATES ONLY IF HOMEPAGE LINK EXISTS)
+                // BUTTON 2: LIVE DEMO (GENERATES ONLY IF HOMEPAGE LINK EXISTS ON GITHUB)
                 if (repo.homepage && repo.homepage !== "") {
                     const btnLive = document.createElement("a");
                     btnLive.href = repo.homepage;
