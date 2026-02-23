@@ -230,9 +230,23 @@ h1, h2, h3, h4, .lcars-btn {
     flex-direction: column;
 }
 
+/* --- PREVENT BUTTON STRETCH AND ALIGN TO BOTTOM --- */
+.project-card .lcars-btn {
+    align-self: flex-start;
+    margin-top: auto;
+}
+
 .project-desc {
     flex-grow: 1; /* EXPANDS TO FILL EMPTY SPACE, PUSHING BUTTON DOWN */
     margin-bottom: 15px; /* KEEPS TEXT AND BUTTON SEPARATED */
+}
+
+/* --- ALIGNING PERSONAL FILE TEXT WITH PROJECT DESCRIPTIONS --- */
+#personal-file .system-text {
+    font-size: inherit;      /* Take the same size as project descriptions */
+    font-weight: normal;     /* Ensure no extra boldness */
+    opacity: 0.9;            /* Subtle LCARS transparency */
+    line-height: 1.4;        /* Optimal readability for small text */
 }
 
 .project-card.locked {
@@ -563,4 +577,63 @@ h1, h2, h3, h4, .lcars-btn {
 @keyframes beamShrink {
     0% { height: 100%; }
     100% { height: 12px; }
+}
+
+/* ========================================= */
+/* --- 12. HOLOGRAPHIC BIO MODAL ---         */
+/* ========================================= */
+#bio-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background-color: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 9000;
+}
+#bio-modal-overlay.hidden { display: none !important; }
+#bio-modal-container {
+    position: relative; width: 90%; max-width: 800px; height: 50vh; /* SLIGHTLY SHORTER THAN GITHUB MODAL */
+    display: flex; justify-content: center; align-items: center;
+}
+.beam-left-bio, .beam-right-bio {
+    position: absolute; width: 12px; height: 12px; background-color: var(--lcars-color-1);
+    border-radius: var(--pill-radius); box-shadow: var(--glow-effect); top: 50%; transform: translateY(-50%); opacity: 0;
+}
+#bio-modal-screen {
+    width: calc(100% - 40px); height: 100%; background-color: var(--panel-bg);
+    border: 1px solid var(--panel-border); border-radius: var(--panel-radius); display: flex; flex-direction: column; opacity: 0; transition: opacity 0.4s ease;
+}
+#bio-modal-screen.fade-in { opacity: 1; }
+
+/* --- OVERRIDE PATCH FOR BIO MODAL BEAMS (FIXES CASCADE ISSUES) --- */
+#bio-modal-container [class*="beam-animate"],
+#bio-modal-container [class*="beam-close"] {
+    opacity: 1;
+}
+
+#bio-modal-container [class*="horizontal"] {
+    height: 100%;
+}
+
+/* RESTORES PERFECT CENTERING FOR CLOSING BEAMS IN BIO MODAL */
+#bio-modal-container .beam-close-vertical-left {
+    transform: translate(-50%, -50%);
+}
+
+#bio-modal-container .beam-close-vertical-right {
+    transform: translate(50%, -50%);
+}
+
+/* --- BIO MODAL TEXT REFINEMENT --- */
+#bio-modal-screen .system-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    opacity: 0.85;
+    text-align: justify;
+    margin-bottom: 10px;
+}
+
+#bio-modal-screen .modal-body {
+    padding: 25px;
+}
+
+#bio-modal-screen strong {
+    color: var(--lcars-color-3);
+    font-size: 1rem;
 }

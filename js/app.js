@@ -1,3 +1,6 @@
+let isAudioEnabled = true;
+const soundPublicRepo = new Audio("assets/audio/engage.mp3");
+
 /* ========================================================= */
 /* MAXCORP TERMINAL CORE LOGIC                               */
 /* ========================================================= */
@@ -131,27 +134,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 5. SPECIFIC BUTTON AUDIO TRIGGERS ---
 
     // INITIALIZE NEW AUDIO OBJECTS
-    const soundAccessData = new Audio("assets/audio/computerbeep_4.mp3");
+    const soundLang = new Audio("assets/audio/computerbeep_50.mp3");
     const soundPublicRepo = new Audio("assets/audio/engage.mp3");
     const soundError = new Audio("assets/audio/computer_error.mp3");
 
     // PREVENT JUMP SCARES WITH PROPER VOLUME CONTROL
-    soundAccessData.volume = 0.3;
+    soundLang.volume = 0.4;
     soundPublicRepo.volume = 0.5;
     soundError.volume = 0.4;
-
-    // TARGET "ACCESS DATA" BUTTON (USING ITS TITLE ATTRIBUTE)
-    const btnAccessData = document.querySelector('a[title="ACCESS PROJECT REPOSITORY"]');
-
-    if (btnAccessData) {
-        btnAccessData.addEventListener("click", () => {
-            if (isAudioEnabled) {
-                let accessClone = soundAccessData.cloneNode();
-                accessClone.volume = 0.3;
-                accessClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
-            }
-        });
-    }
 
     // TARGET "PUBLIC REPOSITORY" BUTTON (USING ITS TITLE ATTRIBUTE)
     const btnPublicRepo = document.querySelector('a[title="ACCESS PUBLIC REPOSITORY"]');
@@ -275,7 +265,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } catch (error) {
             console.error("TELEMETRY ERROR: ", error);
-            skillsPanel.innerHTML = "<p class='skill-row'><span class='skill-label' style='color: var(--lcars-color-alert);'>UPLINK FAILED</span></p>";
+            skillsPanel.innerHTML = "<p class='skill-row'><span class='skill-label' " +
+                "style='color: var(--lcars-color-alert);'>UPLINK FAILED</span></p>";
         }
     }
 
@@ -394,7 +385,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     beamRight.className = "beam-right";
 
                     // RESET SCREEN CONTENT FOR NEXT USE
-                    repoListContainer.innerHTML = '<p class="system-text blink" style="text-align:center; padding: 20px;">AWAITING SENSOR DATA...</p>';
+                    repoListContainer.innerHTML = '<p class="system-text blink" style="text-align:center; ' +
+                        'padding: 20px;">AWAITING SENSOR DATA...</p>';
                 }, 300);
 
             }, 500);
@@ -491,7 +483,106 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } catch (error) {
             console.error("TELEMETRY ERROR: ", error);
-            repoListContainer.innerHTML = '<p class="system-text" style="color: var(--lcars-color-alert); text-align:center;">UPLINK FAILED. UNABLE TO RETRIEVE DATA.</p>';
+            repoListContainer.innerHTML = '<p class="system-text" style="color: var(--lcars-color-alert); ' +
+                'text-align:center;">UPLINK FAILED. UNABLE TO RETRIEVE DATA.</p>';
         }
     }
+
+    // --- 8. SYNCHRONIZED BILINGUAL TRANSLATOR ---
+    const langBtns = document.querySelectorAll(".lang-toggle-btn");
+    const elementsEng = document.querySelectorAll(".bio-short-eng, .bio-long-eng");
+    const elementsPl = document.querySelectorAll(".bio-short-pl, .bio-long-pl");
+    let isPolish = false;
+
+    langBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            // AUDIO FEEDBACK: LCARS CONFIRMATION BEEP
+            if (isAudioEnabled) {
+                let beepClone = soundLang.cloneNode();
+                beepClone.volume = 0.4;
+                beepClone.play().catch(e => console.log("AUDIO BLOCKED"));
+            }
+
+            isPolish = !isPolish;
+
+            // UPDATE ALL TEXT VISIBILITY GLOBALLY
+            elementsEng.forEach(el => el.classList.toggle("hidden", isPolish));
+            elementsPl.forEach(el => el.classList.toggle("hidden", !isPolish));
+
+            // UPDATE ALL BUTTONS TO MATCH STATE
+            langBtns.forEach(b => {
+                b.textContent = isPolish ? "LANG: ENG" : "LANG: PL";
+                b.setAttribute("title", isPolish ? "SWITCH LANGUAGE TO ENGLISH" : "SWITCH LANGUAGE TO POLISH");
+            });
+        });
+    });
+
+    // --- 9. HOLOGRAPHIC BIO MODAL MECHANICS ---
+    const bioOverlay = document.getElementById("bio-modal-overlay");
+    const bioScreen = document.getElementById("bio-modal-screen");
+    const bioBeamLeft = document.querySelector(".beam-left-bio");
+    const bioBeamRight = document.querySelector(".beam-right-bio");
+    const openBioBtn = document.getElementById("open-bio-modal-btn");
+    const closeBioBtn = document.getElementById("close-bio-modal-btn");
+
+    if (openBioBtn) {
+        openBioBtn.addEventListener("click", () => {
+            if (isAudioEnabled) {
+                let doorClone = soundDoors.cloneNode();
+                doorClone.volume = 0.5;
+                doorClone.play().catch(e => console.log("AUDIO BLOCKED"));
+            }
+            bioOverlay.classList.remove("hidden");
+            setTimeout(() => { bioBeamLeft.classList.add("beam-animate-vertical");
+                bioBeamRight.classList.add("beam-animate-vertical"); }, 100);
+            setTimeout(() => { bioBeamLeft.classList.replace("beam-animate-vertical",
+                "beam-animate-horizontal-left"); bioBeamRight.classList.replace("beam-animate-vertical",
+                "beam-animate-horizontal-right"); }, 400);
+            setTimeout(() => { bioScreen.classList.remove("hidden");
+                setTimeout(() => bioScreen.classList.add("fade-in"), 50); }, 900);
+        });
+    }
+
+    function closeBioModal() {
+        if (isAudioEnabled) {
+            let doorClone = soundDoors.cloneNode();
+            doorClone.volume = 0.5;
+            doorClone.play().catch(e => console.log("AUDIO BLOCKED"));
+        }
+        bioScreen.classList.remove("fade-in");
+        setTimeout(() => {
+            bioScreen.classList.add("hidden");
+            bioBeamLeft.className = "beam-left-bio beam-close-horizontal-left";
+            bioBeamRight.className = "beam-right-bio beam-close-horizontal-right";
+            setTimeout(() => {
+                bioBeamLeft.className = "beam-left-bio beam-close-vertical-left";
+                bioBeamRight.className = "beam-right-bio beam-close-vertical-right";
+                setTimeout(() => {
+                    bioOverlay.classList.add("hidden");
+                    bioBeamLeft.className = "beam-left-bio";
+                    bioBeamRight.className = "beam-right-bio";
+                }, 300);
+            }, 500);
+        }, 400);
+    }
+
+    if (closeBioBtn) closeBioBtn.addEventListener("click", closeBioModal);
+    if (bioOverlay) bioOverlay.addEventListener("click", (e) => {
+        if (e.target === bioOverlay || e.target.id === "bio-modal-container") closeBioModal(); });
 });
+
+// --- 10. ENGAGE SOUND FOR DYNAMIC GITHUB BUTTONS ---
+
+const repoListContainer = document.getElementById("repo-list-container");
+
+if (repoListContainer) {
+    repoListContainer.addEventListener("click", (e) => {
+        const btn = e.target.closest(".lcars-btn");
+
+        if (btn && isAudioEnabled) {
+            let engageClone = soundPublicRepo.cloneNode();
+            engageClone.volume = 0.5;
+            engageClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
+        }
+    });
+}

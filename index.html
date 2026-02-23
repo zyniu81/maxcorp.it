@@ -33,11 +33,24 @@
 
         <main class="lcars-content">
 
-            <section id="about" class="data-panel">
+            <section id="personal-file" class="data-panel">
                 <h3 class="panel-header">PERSONAL FILE</h3>
                 <div class="panel-body">
-                    <p>DEVELOPER STATUS: OPERATIONAL.</p>
-                    <p>CURRENT DIRECTIVE: BUILDING MODERN WEB ARCHITECTURE AND INTEGRATING ROBUST BACKEND SYSTEMS.</p>
+
+                    <p class="system-text bio-short-eng">
+                        <strong>DEVELOPER STATUS:</strong> OPERATIONAL.<br>
+                        Focused on backend logic, database architecture, and complex problem-solving.
+                    </p>
+                    <p class="system-text bio-short-pl hidden">
+                        <strong>STATUS:</strong> OPERACYJNY.<br>
+                        Skupiony na logice backendowej, architekturze baz danych i rozwiązywaniu złożonych problemów.
+                    </p>
+
+                    <div style="display: flex; gap: 10px; margin-top: 15px; align-items: flex-start;">
+                        <button class="lcars-btn small lang-toggle-btn" title="SWITCH LANGUAGE TO POLISH">LANG: PL</button>
+                        <button id="open-bio-modal-btn" class="lcars-btn small" style="background-color: var(--lcars-color-2);" title="ACCESS FULL PERSONNEL RECORD">ACCESS FILE</button>
+                    </div>
+
                 </div>
             </section>
 
@@ -70,8 +83,8 @@
             <section id="contact" class="data-panel">
                 <h3 class="panel-header">SUBSPACE COMMUNICATIONS</h3>
                 <div class="comms-grid">
-                    <a href="mailto:primary@domain.com" class="lcars-btn" title="INITIATE PRIMARY COMMS">PRIMARY CHANNEL</a>
-                    <a href="mailto:secondary@domain.com" class="lcars-btn" title="INITIATE SECONDARY COMMS">SECONDARY CHANNEL</a>
+                    <a href="mailto:szymon.zych@wp.pl" class="lcars-btn" title="INITIATE PRIMARY COMMS">PRIMARY CHANNEL</a>
+                    <a href="mailto:maxcorp@maxcorp.it" class="lcars-btn" title="INITIATE SECONDARY COMMS">SECONDARY CHANNEL</a>
                     <a href="https://github.com/zyniu81" target="_blank" class="lcars-btn" title="ACCESS PUBLIC REPOSITORY">PUBLIC REPOSITORY</a>
                 </div>
             </section>
@@ -91,6 +104,33 @@
                 </div>
                 <div class="modal-body" id="repo-list-container">
                     <p class="system-text blink" style="text-align:center; padding: 20px;">AWAITING SENSOR DATA...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="bio-modal-overlay" class="hidden" title="CLICK OUTSIDE TO CLOSE CHANNEL">
+        <div id="bio-modal-container">
+            <div class="beam-left-bio"></div>
+            <div class="beam-right-bio"></div>
+
+            <div id="bio-modal-screen" class="hidden">
+                <div class="modal-header">
+                    <h3 class="panel-header">PERSONNEL RECORD</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="lcars-btn small lang-toggle-btn" title="SWITCH LANGUAGE TO POLISH">LANG: PL</button>
+                        <button id="close-bio-modal-btn" class="lcars-btn small" title="TERMINATE HOLOGRAPHIC UPLINK">CLOSE</button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <p class="system-text bio-long-eng">
+                        I specialize in backend systems, data analysis, and building robust architecture from the ground up. My primary drive is automating tedious tasks and solving intricate logic puzzles—honestly, I'd much rather code a game than play one!<br><br>
+                        Currently open to Junior and Freelancer opportunities. When I'm not optimizing data streams, I'm likely analyzing snooker matches or exploring other sports.
+                    </p>
+                    <p class="system-text bio-long-pl hidden">
+                        Specjalizuję się w systemach backendowych, analizie danych i budowaniu solidnej architektury od zera. Napędza mnie automatyzacja żmudnych zadań i rozwiązywanie zawiłych zagadek logicznych – szczerze mówiąc, zdecydowanie wolę napisać grę, niż w nią grać!<br><br>
+                        Obecnie szukam wyzwań jako Junior lub Freelancer. Kiedy nie optymalizuję strumieni danych, najpewniej analizuję mecze snookera lub śledzę inne dyscypliny sportowe.
+                    </p>
                 </div>
             </div>
         </div>
