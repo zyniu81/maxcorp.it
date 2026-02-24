@@ -1,211 +1,84 @@
-let isAudioEnabled = true;
-const soundPublicRepo = new Audio("assets/audio/engage.mp3");
+/* ========================================================= */
+/* MAXCORP TERMINAL CORE LOGIC - PART 1                      */
+/* ========================================================= */
 
-/* ========================================================= */
-/* MAXCORP TERMINAL CORE LOGIC                               */
-/* ========================================================= */
+// =========================================================
+// --- 1. GLOBAL SYSTEM STATE & AUDIO ASSETS ---
+// =========================================================
+
+// SYSTEM STATE
+let isAudioEnabled = false; // DEFAULT OFF FOR UX COMPLIANCE
+let isPolish = false; // DEFAULT SYSTEM LANGUAGE
+const githubUsername = "zyniu81";
+
+// INITIALIZE ALL AUDIO OBJECTS
+const soundPublicRepo = new Audio("assets/audio/engage.mp3");
+const soundToggle = new Audio("assets/audio/computerbeep_7.mp3");
+const soundRetroOn = new Audio("assets/audio/tng_viewscreen_on.mp3");
+const soundNeoOn = new Audio("assets/audio/tng_viewscreen_off.mp3");
+const soundLang = new Audio("assets/audio/computerbeep_50.mp3");
+const soundError = new Audio("assets/audio/computer_error.mp3");
+const soundPrimaryComms = new Audio("assets/audio/communications_start_transmission.mp3");
+const soundSecondaryComms = new Audio("assets/audio/communications_end_transmission.mp3");
+const soundDoors = new Audio("assets/audio/tng_doors.m4a");
+
+// CALIBRATE VOLUMES GLOBALLY (PREVENT JUMP SCARES)
+soundPublicRepo.volume = 0.5;
+soundToggle.volume = 0.3;
+soundRetroOn.volume = 0.5;
+soundNeoOn.volume = 0.5;
+soundLang.volume = 0.4;
+soundError.volume = 0.4;
+soundPrimaryComms.volume = 0.4;
+soundSecondaryComms.volume = 0.4;
+soundDoors.volume = 0.5;
+
+
+// =========================================================
+// --- 2. MAIN SYSTEM BOOT & DOM SELECTORS ---
+// =========================================================
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    // --- 1. INITIALIZATION SEQUENCE (SPLASH SCREEN) ---
+    // --- CACHE DOM ELEMENTS ---
     const splashScreen = document.getElementById("splash-screen");
     const mainInterface = document.getElementById("lcars-wrapper");
-
-    // SET TIMEOUT FOR 2 SECONDS (2000 MILLISECONDS)
-    setTimeout(() => {
-        // FADE OUT SPLASH SCREEN
-        splashScreen.style.opacity = "0";
-
-        // WAIT FOR FADE TRANSITION TO COMPLETE BEFORE HIDING FROM DOM
-        setTimeout(() => {
-            splashScreen.classList.add("hidden");
-            // REVEAL MAIN LCARS INTERFACE
-            mainInterface.classList.remove("hidden");
-        }, 500);
-
-    }, 2000);
-
-    // --- 2. THEME TOGGLE (NEO VS RETRO PROTOCOL) ---
     const themeBtn = document.getElementById("theme-toggle");
-    const rootElement = document.documentElement; // Targets the <html> tag
-
-    themeBtn.addEventListener("click", () => {
-        // CHECK CURRENT THEME STATUS
-        const currentTheme = rootElement.getAttribute("data-theme");
-
-        if (currentTheme === "retro") {
-            // SWITCH TO NEO-LCARS (DEFAULT)
-            rootElement.removeAttribute("data-theme");
-            themeBtn.textContent = "ENGAGE RETRO";
-            themeBtn.setAttribute("title", "SWITCH TO CLASSIC 90S INTERFACE");
-        } else {
-            // SWITCH TO CLASSIC RETRO LCARS
-            rootElement.setAttribute("data-theme", "retro");
-            themeBtn.textContent = "RESTORE NEO";
-            themeBtn.setAttribute("title", "SWITCH TO MODERN NEON INTERFACE");
-        }
-    });
-
-    // --- 3. SUBSPACE COMMS (COPY TO CLIPBOARD FALLBACK) ---
-    const commsButtons = document.querySelectorAll('a[href^="mailto:"]');
-
-    commsButtons.forEach(button => {
-        button.addEventListener("click", (event) => {
-            // EXTRACT EMAIL ADDRESS FROM HREF ATTRIBUTE
-            const emailAddress = button.getAttribute("href").replace("mailto:", "");
-
-            // EXECUTE CLIPBOARD WRITE OPERATION
-            navigator.clipboard.writeText(emailAddress).then(() => {
-                // STORE ORIGINAL TEXT TO RESTORE LATER
-                const originalText = button.textContent;
-
-                // PROVIDE VISUAL FEEDBACK TO USER
-                button.textContent = "ADDRESS COPIED";
-                button.style.backgroundColor = "var(--lcars-color-2)"; // HIGHLIGHT COLOR
-                button.style.color = "#000"; // HIGH CONTRAST TEXT
-
-                // RESTORE ORIGINAL BUTTON STATE AFTER 2.5 SECONDS
-                setTimeout(() => {
-                    button.textContent = originalText;
-                    // RESET STYLES TO LET CSS REGAIN CONTROL
-                    button.style.backgroundColor = "";
-                    button.style.color = "";
-                }, 2500);
-            }).catch(err => {
-                console.error("CLIPBOARD WRITE FAILED: ", err);
-            });
-        });
-    });
-
-    // --- 4. AUDIO SUBSYSTEM ---
+    const rootElement = document.documentElement;
     const audioToggleBtn = document.getElementById("audio-toggle");
-    let isAudioEnabled = false; // DEFAULT OFF FOR UX COMPLIANCE
-
-    // INITIALIZE AUDIO OBJECTS
-    const soundToggle = new Audio("assets/audio/computerbeep_7.mp3");
-    const soundRetroOn = new Audio("assets/audio/tng_viewscreen_on.mp3");
-    const soundNeoOn = new Audio("assets/audio/tng_viewscreen_off.mp3");
-
-    // SET VOLUMES TO PREVENT JUMP SCARES
-    soundToggle.volume = 0.3;
-    soundRetroOn.volume = 0.5;
-    soundNeoOn.volume = 0.5;
-
-    // TOGGLE GLOBAL AUDIO STATE
-    audioToggleBtn.addEventListener("click", () => {
-        isAudioEnabled = !isAudioEnabled;
-
-        if (isAudioEnabled) {
-            audioToggleBtn.textContent = "AUDIO ON";
-            audioToggleBtn.style.backgroundColor = "var(--lcars-color-alert)";
-            audioToggleBtn.setAttribute("title", "MUTE SYSTEM AUDIO");
-
-            // PLAY CONFIRMATION BEEP
-            let toggleClone = soundToggle.cloneNode();
-            toggleClone.volume = 0.3;
-            toggleClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
-        } else {
-            audioToggleBtn.textContent = "AUDIO OFF";
-            audioToggleBtn.style.backgroundColor = "var(--lcars-color-3)";
-            audioToggleBtn.setAttribute("title", "ENABLE SYSTEM AUDIO FEEDBACK");
-        }
-    });
-
-    // ATTACH THEME-SPECIFIC SOUNDS TO THEME TOGGLE
-    document.getElementById("theme-toggle").addEventListener("click", () => {
-        if (!isAudioEnabled) return; // EXIT IF AUDIO IS MUTED
-
-        // CHECK WHICH THEME WAS JUST ACTIVATED
-        const currentTheme = document.documentElement.getAttribute("data-theme");
-
-        if (currentTheme === "retro") {
-            // RETRO PROTOCOL ENGAGED -> PLAY VIEWSCREEN ON
-            let retroClone = soundRetroOn.cloneNode();
-            retroClone.volume = 0.5;
-            retroClone.play().catch(err => {});
-        } else {
-            // NEO PROTOCOL RESTORED -> PLAY VIEWSCREEN OFF
-            let neoClone = soundNeoOn.cloneNode();
-            neoClone.volume = 0.5;
-            neoClone.play().catch(err => {});
-        }
-    });
-
-    // --- 5. SPECIFIC BUTTON AUDIO TRIGGERS ---
-
-    // INITIALIZE NEW AUDIO OBJECTS
-    const soundLang = new Audio("assets/audio/computerbeep_50.mp3");
-    const soundPublicRepo = new Audio("assets/audio/engage.mp3");
-    const soundError = new Audio("assets/audio/computer_error.mp3");
-
-    // PREVENT JUMP SCARES WITH PROPER VOLUME CONTROL
-    soundLang.volume = 0.4;
-    soundPublicRepo.volume = 0.5;
-    soundError.volume = 0.4;
-
-    // TARGET "PUBLIC REPOSITORY" BUTTON (USING ITS TITLE ATTRIBUTE)
-    const btnPublicRepo = document.querySelector('a[title="ACCESS PUBLIC REPOSITORY"]');
-
-    if (btnPublicRepo) {
-        btnPublicRepo.addEventListener("click", () => {
-            if (isAudioEnabled) {
-                let repoClone = soundPublicRepo.cloneNode();
-                repoClone.volume = 0.5;
-                repoClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
-            }
-        });
-    }
-
-    // TARGET "ENCRYPTED SLOT" BUTTON (USING ITS TITLE ATTRIBUTE)
-    const btnEncryptedAccess = document.querySelector('a[title="ATTEMPT ENCRYPTED ACCESS"]');
-
-    if (btnEncryptedAccess) {
-        btnEncryptedAccess.addEventListener("click", (event) => {
-            // PREVENT DEFAULT LINK BEHAVIOR (AVOIDS PAGE JUMPING TO TOP)
-            event.preventDefault();
-
-            if (isAudioEnabled) {
-                let errorClone = soundError.cloneNode();
-                errorClone.volume = 0.4;
-                errorClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
-            }
-        });
-    }
-
-    // INITIALIZE COMMS AUDIO OBJECTS
-    const soundPrimaryComms = new Audio("assets/audio/communications_start_transmission.mp3");
-    const soundSecondaryComms = new Audio("assets/audio/communications_end_transmission.mp3");
-
-    soundPrimaryComms.volume = 0.4;
-    soundSecondaryComms.volume = 0.4;
-
-    // TARGET "PRIMARY CHANNEL" BUTTON
-    const btnPrimary = document.querySelector('a[title="INITIATE PRIMARY COMMS"]');
-    if (btnPrimary) {
-        btnPrimary.addEventListener("click", () => {
-            if (isAudioEnabled) {
-                let primaryClone = soundPrimaryComms.cloneNode();
-                primaryClone.volume = 0.4;
-                primaryClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
-            }
-        });
-    }
-
-    // TARGET "SECONDARY CHANNEL" BUTTON
-    const btnSecondary = document.querySelector('a[title="INITIATE SECONDARY COMMS"]');
-    if (btnSecondary) {
-        btnSecondary.addEventListener("click", () => {
-            if (isAudioEnabled) {
-                let secondaryClone = soundSecondaryComms.cloneNode();
-                secondaryClone.volume = 0.4;
-                secondaryClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
-            }
-        });
-    }
-
-    // --- 6. DYNAMIC GITHUB SENSOR ARRAY (SYSTEM DIAGNOSTICS) ---
-    const githubUsername = "zyniu81";
     const skillsPanel = document.querySelector("#skills .panel-body");
+
+    const commsButtons = document.querySelectorAll('a[href^="mailto:"]');
+    const btnPublicRepo = document.querySelector('a[title="ACCESS PUBLIC REPOSITORY"]');
+    const btnEncryptedAccess = document.querySelector('a[title="ATTEMPT ENCRYPTED ACCESS"]');
+    const btnPrimary = document.querySelector('a[title="INITIATE PRIMARY COMMS"]');
+    const btnSecondary = document.querySelector('a[title="INITIATE SECONDARY COMMS"]');
+    const btnOpenModal = document.querySelector('a[title="ACCESS PROJECT REPOSITORY"]');
+
+    const modalOverlay = document.getElementById("repo-modal-overlay");
+    const modalScreen = document.getElementById("repo-modal-screen");
+    const beamLeft = document.querySelector(".beam-left");
+    const beamRight = document.querySelector(".beam-right");
+    const closeModalBtn = document.getElementById("close-modal-btn");
+    const repoListContainer = document.getElementById("repo-list-container");
+
+    // TRANSLATOR
+    const langBtns = document.querySelectorAll(".lang-toggle-btn");
+    const elementsEng = document.querySelectorAll(".bio-short-eng, .bio-long-eng");
+    const elementsPl = document.querySelectorAll(".bio-short-pl, .bio-long-pl");
+
+    // BIO MODAL
+    const bioOverlay = document.getElementById("bio-modal-overlay");
+    const bioScreen = document.getElementById("bio-modal-screen");
+    const bioBeamLeft = document.querySelector(".beam-left-bio");
+    const bioBeamRight = document.querySelector(".beam-right-bio");
+    const openBioBtn = document.getElementById("open-bio-modal-btn");
+    const closeBioBtn = document.getElementById("close-bio-modal-btn");
+
+
+    // =========================================================
+    // --- 3. SYSTEM FUNCTIONS ---
+    // =========================================================
 
     // ASYNC FUNCTION TO FETCH AND RENDER REPOSITORY DATA
     async function fetchGitHubStats() {
@@ -295,63 +168,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // INITIATE SCAN SEQUENCE
-    if (skillsPanel) {
-        fetchGitHubStats();
-    }
-
-    // --- 7. HOLOGRAPHIC REPOSITORY MODAL ---
-    const modalOverlay = document.getElementById("repo-modal-overlay");
-    const modalScreen = document.getElementById("repo-modal-screen");
-    const beamLeft = document.querySelector(".beam-left");
-    const beamRight = document.querySelector(".beam-right");
-    const closeModalBtn = document.getElementById("close-modal-btn");
-    const repoListContainer = document.getElementById("repo-list-container");
-
-    // INITIALIZE DOOR AUDIO OBJECT (M4A FORMAT FULLY SUPPORTED)
-    const soundDoors = new Audio("assets/audio/tng_doors.m4a");
-    soundDoors.volume = 0.5; // ADJUST IF THE DOORS ARE TOO LOUD
-
-    // TARGET THE "DATABASE CONTROLLER" BUTTON AS TRIGGER
-    const btnOpenModal = document.querySelector('a[title="ACCESS PROJECT REPOSITORY"]');
-
-    if (btnOpenModal) {
-        btnOpenModal.addEventListener("click", (e) => {
-            e.preventDefault(); // PREVENT DEFAULT LINK JUMP
-
-            // PLAY DOOR OPEN SOUND
-            if (isAudioEnabled) {
-                let doorClone = soundDoors.cloneNode();
-                doorClone.volume = 0.5;
-                doorClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
-            }
-
-            // PHASE 1: SHOW DARK OVERLAY AND DOTS
-            modalOverlay.classList.remove("hidden");
-
-            // PHASE 2: VERTICAL BEAM GROW
-            setTimeout(() => {
-                beamLeft.classList.add("beam-animate-vertical");
-                beamRight.classList.add("beam-animate-vertical");
-            }, 100);
-
-            // PHASE 3: HORIZONTAL BEAM SLIDE
-            setTimeout(() => {
-                beamLeft.classList.replace("beam-animate-vertical", "beam-animate-horizontal-left");
-                beamRight.classList.replace("beam-animate-vertical", "beam-animate-horizontal-right");
-            }, 400);
-
-            // PHASE 4: REVEAL SCREEN AND LOAD DATA
-            setTimeout(() => {
-                modalScreen.classList.remove("hidden");
-                setTimeout(() => modalScreen.classList.add("fade-in"), 50);
-
-                // INITIATE DATA FETCH (BLENDS GITHUB WITH MANUAL PROJECTS)
-                loadRepositoryData();
-            }, 900);
-        });
-    }
-
     // FUNCTION TO CLOSE MODAL WITH SEQUENTIAL REVERSE ANIMATIONS
     function closeRepoModal() {
         // PLAY DOOR CLOSE SOUND IMMEDIATELY
@@ -394,22 +210,181 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 400);
     }
 
-    // ATTACH CLOSE EVENTS
-    if (closeModalBtn) closeModalBtn.addEventListener("click", closeRepoModal);
 
+    // =========================================================
+    // --- 4. EVENT LISTENERS & TRIGGERS ---
+    // =========================================================
+
+    // SPLASH SCREEN LOGIC
+    if (splashScreen && mainInterface) {
+        setTimeout(() => {
+            splashScreen.style.opacity = "0";
+            setTimeout(() => {
+                splashScreen.classList.add("hidden");
+                mainInterface.classList.remove("hidden");
+            }, 500);
+        }, 2000);
+    }
+
+    // THEME TOGGLE LOGIC
+    if (themeBtn && rootElement) {
+        themeBtn.addEventListener("click", () => {
+            const currentTheme = rootElement.getAttribute("data-theme");
+
+            if (currentTheme === "retro") {
+                rootElement.removeAttribute("data-theme");
+                themeBtn.textContent = "ENGAGE RETRO";
+                themeBtn.setAttribute("title", "SWITCH TO CLASSIC 90S INTERFACE");
+                if (isAudioEnabled) {
+                    let neoClone = soundNeoOn.cloneNode();
+                    neoClone.volume = 0.5;
+                    neoClone.play().catch(err => {});
+                }
+            } else {
+                rootElement.setAttribute("data-theme", "retro");
+                themeBtn.textContent = "RESTORE NEO";
+                themeBtn.setAttribute("title", "SWITCH TO MODERN NEON INTERFACE");
+                if (isAudioEnabled) {
+                    let retroClone = soundRetroOn.cloneNode();
+                    retroClone.volume = 0.5;
+                    retroClone.play().catch(err => {});
+                }
+            }
+        });
+    }
+
+    // SUBSPACE COMMS LOGIC (COPY TO CLIPBOARD)
+    if (commsButtons) {
+        commsButtons.forEach(button => {
+            button.addEventListener("click", (event) => {
+                const emailAddress = button.getAttribute("href").replace("mailto:", "");
+                navigator.clipboard.writeText(emailAddress).then(() => {
+                    const originalText = button.textContent;
+                    button.textContent = "ADDRESS COPIED";
+                    button.style.backgroundColor = "var(--lcars-color-2)";
+                    button.style.color = "#000";
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.style.backgroundColor = "";
+                        button.style.color = "";
+                    }, 2500);
+                }).catch(err => console.error("CLIPBOARD WRITE FAILED: ", err));
+            });
+        });
+    }
+
+    // AUDIO TOGGLE LOGIC
+    if (audioToggleBtn) {
+        audioToggleBtn.addEventListener("click", () => {
+            isAudioEnabled = !isAudioEnabled;
+            if (isAudioEnabled) {
+                audioToggleBtn.textContent = "AUDIO ON";
+                audioToggleBtn.style.backgroundColor = "var(--lcars-color-alert)";
+                audioToggleBtn.setAttribute("title", "MUTE SYSTEM AUDIO");
+                let toggleClone = soundToggle.cloneNode();
+                toggleClone.volume = 0.3;
+                toggleClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
+            } else {
+                audioToggleBtn.textContent = "AUDIO OFF";
+                audioToggleBtn.style.backgroundColor = "var(--lcars-color-3)";
+                audioToggleBtn.setAttribute("title", "ENABLE SYSTEM AUDIO FEEDBACK");
+            }
+        });
+    }
+
+    // SPECIFIC BUTTON AUDIO TRIGGERS
+    if (btnPublicRepo) {
+        btnPublicRepo.addEventListener("click", () => {
+            if (isAudioEnabled) {
+                let repoClone = soundPublicRepo.cloneNode();
+                repoClone.volume = 0.5;
+                repoClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
+            }
+        });
+    }
+
+    if (btnEncryptedAccess) {
+        btnEncryptedAccess.addEventListener("click", (event) => {
+            event.preventDefault();
+            if (isAudioEnabled) {
+                let errorClone = soundError.cloneNode();
+                errorClone.volume = 0.4;
+                errorClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
+            }
+        });
+    }
+
+    if (btnPrimary) {
+        btnPrimary.addEventListener("click", () => {
+            if (isAudioEnabled) {
+                let primaryClone = soundPrimaryComms.cloneNode();
+                primaryClone.volume = 0.4;
+                primaryClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
+            }
+        });
+    }
+
+    if (btnSecondary) {
+        btnSecondary.addEventListener("click", () => {
+            if (isAudioEnabled) {
+                let secondaryClone = soundSecondaryComms.cloneNode();
+                secondaryClone.volume = 0.4;
+                secondaryClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
+            }
+        });
+    }
+
+    // INITIATE SCAN SEQUENCE
+    if (skillsPanel) {
+        fetchGitHubStats();
+    }
+
+    // REPOSITORY MODAL TRIGGER
+    if (btnOpenModal) {
+        btnOpenModal.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (isAudioEnabled) {
+                let doorClone = soundDoors.cloneNode();
+                doorClone.volume = 0.5;
+                doorClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
+            }
+            modalOverlay.classList.remove("hidden");
+            setTimeout(() => {
+                beamLeft.classList.add("beam-animate-vertical");
+                beamRight.classList.add("beam-animate-vertical");
+            }, 100);
+            setTimeout(() => {
+                beamLeft.classList.replace("beam-animate-vertical", "beam-animate-horizontal-left");
+                beamRight.classList.replace("beam-animate-vertical", "beam-animate-horizontal-right");
+            }, 400);
+            setTimeout(() => {
+                modalScreen.classList.remove("hidden");
+                setTimeout(() => modalScreen.classList.add("fade-in"), 50);
+
+                // INITIATE DATA FETCH
+                loadRepositoryData();
+            }, 900);
+        });
+    }
+
+    // CLOSE MODAL EVENTS
+    if (closeModalBtn) closeModalBtn.addEventListener("click", closeRepoModal);
     if (modalOverlay) {
         modalOverlay.addEventListener("click", (e) => {
-            // CLOSE ONLY IF CLICKING THE DARK OVERLAY, NOT THE SCREEN ITSELF
             if (e.target === modalOverlay || e.target.id === "repo-modal-container") {
                 closeRepoModal();
             }
         });
     }
 
-    // FUNCTION TO FETCH GITHUB REPOS
+    // =========================================================
+    // --- 5. SYSTEM FUNCTIONS (PART 2) ---
+    // =========================================================
+
+    // ASYNC FUNCTION TO FETCH GITHUB REPOS FOR THE MODAL
     async function loadRepositoryData() {
         try {
-            // FETCH GITHUB DATA (REUSING THE USERNAME VARIABLE FROM DIAGNOSTICS)
+            // FETCH GITHUB DATA (REUSING THE USERNAME VARIABLE)
             const response = await fetch(`https://api.github.com/users/${githubUsername}/repos`);
             if (!response.ok) throw new Error("API COMMS FAILURE");
             const gitRepos = await response.json();
@@ -488,75 +463,24 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // --- 8. SYNCHRONIZED BILINGUAL TRANSLATOR ---
-    const langBtns = document.querySelectorAll(".lang-toggle-btn");
-    const elementsEng = document.querySelectorAll(".bio-short-eng, .bio-long-eng");
-    const elementsPl = document.querySelectorAll(".bio-short-pl, .bio-long-pl");
-    let isPolish = false;
-
-    langBtns.forEach(btn => {
-        btn.addEventListener("click", () => {
-            // AUDIO FEEDBACK: LCARS CONFIRMATION BEEP
-            if (isAudioEnabled) {
-                let beepClone = soundLang.cloneNode();
-                beepClone.volume = 0.4;
-                beepClone.play().catch(e => console.log("AUDIO BLOCKED"));
-            }
-
-            isPolish = !isPolish;
-
-            // UPDATE ALL TEXT VISIBILITY GLOBALLY
-            elementsEng.forEach(el => el.classList.toggle("hidden", isPolish));
-            elementsPl.forEach(el => el.classList.toggle("hidden", !isPolish));
-
-            // UPDATE ALL BUTTONS TO MATCH STATE
-            langBtns.forEach(b => {
-                b.textContent = isPolish ? "LANG: ENG" : "LANG: PL";
-                b.setAttribute("title", isPolish ? "SWITCH LANGUAGE TO ENGLISH" : "SWITCH LANGUAGE TO POLISH");
-            });
-        });
-    });
-
-    // --- 9. HOLOGRAPHIC BIO MODAL MECHANICS ---
-    const bioOverlay = document.getElementById("bio-modal-overlay");
-    const bioScreen = document.getElementById("bio-modal-screen");
-    const bioBeamLeft = document.querySelector(".beam-left-bio");
-    const bioBeamRight = document.querySelector(".beam-right-bio");
-    const openBioBtn = document.getElementById("open-bio-modal-btn");
-    const closeBioBtn = document.getElementById("close-bio-modal-btn");
-
-    if (openBioBtn) {
-        openBioBtn.addEventListener("click", () => {
-            if (isAudioEnabled) {
-                let doorClone = soundDoors.cloneNode();
-                doorClone.volume = 0.5;
-                doorClone.play().catch(e => console.log("AUDIO BLOCKED"));
-            }
-            bioOverlay.classList.remove("hidden");
-            setTimeout(() => { bioBeamLeft.classList.add("beam-animate-vertical");
-                bioBeamRight.classList.add("beam-animate-vertical"); }, 100);
-            setTimeout(() => { bioBeamLeft.classList.replace("beam-animate-vertical",
-                "beam-animate-horizontal-left"); bioBeamRight.classList.replace("beam-animate-vertical",
-                "beam-animate-horizontal-right"); }, 400);
-            setTimeout(() => { bioScreen.classList.remove("hidden");
-                setTimeout(() => bioScreen.classList.add("fade-in"), 50); }, 900);
-        });
-    }
-
+    // FUNCTION TO CLOSE BIO MODAL WITH SEQUENTIAL ANIMATIONS
     function closeBioModal() {
         if (isAudioEnabled) {
             let doorClone = soundDoors.cloneNode();
             doorClone.volume = 0.5;
-            doorClone.play().catch(e => console.log("AUDIO BLOCKED"));
+            doorClone.play().catch(e => console.log("AUDIO BLOCKED BY BROWSER"));
         }
+
         bioScreen.classList.remove("fade-in");
         setTimeout(() => {
             bioScreen.classList.add("hidden");
             bioBeamLeft.className = "beam-left-bio beam-close-horizontal-left";
             bioBeamRight.className = "beam-right-bio beam-close-horizontal-right";
+
             setTimeout(() => {
                 bioBeamLeft.className = "beam-left-bio beam-close-vertical-left";
                 bioBeamRight.className = "beam-right-bio beam-close-vertical-right";
+
                 setTimeout(() => {
                     bioOverlay.classList.add("hidden");
                     bioBeamLeft.className = "beam-left-bio";
@@ -566,23 +490,81 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 400);
     }
 
+
+    // =========================================================
+    // --- 6. EVENT LISTENERS (PART 2) ---
+    // =========================================================
+
+    // SYNCHRONIZED BILINGUAL TRANSLATOR LOGIC
+    if (langBtns) {
+        langBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                // AUDIO FEEDBACK: LCARS CONFIRMATION BEEP
+                if (isAudioEnabled) {
+                    let beepClone = soundLang.cloneNode();
+                    beepClone.volume = 0.4;
+                    beepClone.play().catch(e => console.log("AUDIO BLOCKED BY BROWSER"));
+                }
+
+                isPolish = !isPolish;
+
+                // UPDATE ALL TEXT VISIBILITY GLOBALLY
+                elementsEng.forEach(el => el.classList.toggle("hidden", isPolish));
+                elementsPl.forEach(el => el.classList.toggle("hidden", !isPolish));
+
+                // UPDATE ALL BUTTONS TO MATCH STATE
+                langBtns.forEach(b => {
+                    b.textContent = isPolish ? "LANG: ENG" : "LANG: PL";
+                    b.setAttribute("title", isPolish ? "SWITCH LANGUAGE TO ENGLISH" : "SWITCH LANGUAGE TO POLISH");
+                });
+            });
+        });
+    }
+
+    // HOLOGRAPHIC BIO MODAL TRIGGERS
+    if (openBioBtn) {
+        openBioBtn.addEventListener("click", () => {
+            if (isAudioEnabled) {
+                let doorClone = soundDoors.cloneNode();
+                doorClone.volume = 0.5;
+                doorClone.play().catch(e => console.log("AUDIO BLOCKED BY BROWSER"));
+            }
+            bioOverlay.classList.remove("hidden");
+            setTimeout(() => {
+                bioBeamLeft.classList.add("beam-animate-vertical");
+                bioBeamRight.classList.add("beam-animate-vertical");
+            }, 100);
+            setTimeout(() => {
+                bioBeamLeft.classList.replace("beam-animate-vertical", "beam-animate-horizontal-left");
+                bioBeamRight.classList.replace("beam-animate-vertical", "beam-animate-horizontal-right");
+            }, 400);
+            setTimeout(() => {
+                bioScreen.classList.remove("hidden");
+                setTimeout(() => bioScreen.classList.add("fade-in"), 50);
+            }, 900);
+        });
+    }
+
+    // BIO MODAL CLOSE TRIGGERS
     if (closeBioBtn) closeBioBtn.addEventListener("click", closeBioModal);
-    if (bioOverlay) bioOverlay.addEventListener("click", (e) => {
-        if (e.target === bioOverlay || e.target.id === "bio-modal-container") closeBioModal(); });
+    if (bioOverlay) {
+        bioOverlay.addEventListener("click", (e) => {
+            if (e.target === bioOverlay || e.target.id === "bio-modal-container") closeBioModal();
+        });
+    }
+
+    // DYNAMIC GITHUB BUTTONS AUDIO (EVENT DELEGATION)
+    // NOW SAFELY ENCAPSULATED INSIDE DOMContentLoaded
+    if (repoListContainer) {
+        repoListContainer.addEventListener("click", (e) => {
+            const btn = e.target.closest(".lcars-btn");
+
+            if (btn && isAudioEnabled) {
+                let engageClone = soundPublicRepo.cloneNode();
+                engageClone.volume = 0.5;
+                engageClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
+            }
+        });
+    }
+
 });
-
-// --- 10. ENGAGE SOUND FOR DYNAMIC GITHUB BUTTONS ---
-
-const repoListContainer = document.getElementById("repo-list-container");
-
-if (repoListContainer) {
-    repoListContainer.addEventListener("click", (e) => {
-        const btn = e.target.closest(".lcars-btn");
-
-        if (btn && isAudioEnabled) {
-            let engageClone = soundPublicRepo.cloneNode();
-            engageClone.volume = 0.5;
-            engageClone.play().catch(err => console.log("AUDIO BLOCKED BY BROWSER"));
-        }
-    });
-}
